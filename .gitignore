@@ -1,0 +1,37 @@
+# OMNeT++ build artifacts
+*.o
+*.a
+*.so
+*.d
+*.exe
+*.bak
+*.swp
+*.out
+*.log
+*.vec
+*.sca
+*.ned.bak
+*.msg.bak
+*.cmsg
+*.oppbak
+
+# IDE & temp files
+*.~*
+*~
+.DS_Store
+Thumbs.db
+
+# Eclipse/OMNeT++ workspace settings
+.cproject
+.project
+.settings/
+
+# Output folders
+out/
+results/
+build/
+bin/
+
+# Python bytecode (if using any scripts)
+*.pyc
+__pycache__/
