@@ -15,6 +15,18 @@
 *.cmsg
 *.oppbak
 
+# Ignore build and output folders
+bin/
+out/
+lib/
+
+# Ignore images and documentation folders
+images/
+doc/
+
+# Ignore headers and includes if auto-generated or not source
+include/
+
 # IDE & temp files
 *.~*
 *~
