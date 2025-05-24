@@ -134,7 +134,7 @@ simple LteRlcUm like ILteRlcUm {
         @display("i=block/wheelbarrow");
         
         //# Rlc Queue
-        int queueSize @unit(B) = default(2MiB);              // RLC TX entity SDU queue size (0: unlimited)
+        int queueSize @unit(B) = default(1MiB);              // RLC TX entity SDU queue size (0: unlimited)
         bool mapAllLcidsToSingleBearer = default(false);     // if true, all LCIDs are mapped to a single bearer
         
         //# SDU-level statistics
@@ -184,6 +184,11 @@ simple LteRlcUm like ILteRlcUm {
         @statistic[sentPacketToUpperLayer](source="sentPacketToUpperLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @signal[sentPacketToLowerLayer];
         @statistic[sentPacketToLowerLayer](source="sentPacketToLowerLayer"; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
+        
+        //SDU
+          
+        
+      
         
     gates:
         //# 
@@ -337,6 +342,16 @@ simple UmTxEntity {
         @dynamic(true);
         @display("i=block/segm");
         int fragmentSize @unit(B) = default(30B);        // Size of fragments
+        
+        // Algeady - signals und Statostic
+          @signal[SduBuffer];
+        @statistic[SduBuffer](source="SduBuffer"; record=vector; interpolationmode=none);
+        
+        
+         @signal[SduHoldingQueue];
+        @statistic[SduHoldingQueue](source="SduHoldingQueue"; record=vector; interpolationmode=none);
+        
+        
 }
 
 // 

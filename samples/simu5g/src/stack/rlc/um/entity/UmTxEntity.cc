@@ -25,6 +25,10 @@ using namespace inet;
 
 void UmTxEntity::initialize()
 {
+    SimTime target = SimTime(50, SIMTIME_MS);      // 5 ms
+    SimTime interval = SimTime(300, SIMTIME_MS);  // 100 ms
+        codel = new CoDel(target, interval);
+
     sno_ = 0;
     firstIsFragment_ = false;
     notifyEmptyBuffer_ = false;
@@ -44,6 +48,11 @@ void UmTxEntity::initialize()
     lteRlc_ = check_and_cast<LteRlcUm*>(getParentModule()->getSubmodule("um"));
     queueSize_ = lteRlc_->par("queueSize");
     queueLength_ = 0;
+    // Algeady: registerSignal
+        SduBuffer = registerSignal("SduBuffer");
+        SduHoldingQueue = registerSignal("SduHoldingQueue");
+
+
 
 
     // @author Alessandro Noferi
@@ -78,21 +87,65 @@ void UmTxEntity::initialize()
     burstStatus_ = INACTIVE;
 
 }
-
+/*
 bool UmTxEntity::enque(cPacket* pkt)
 {
+
+
+
+
     EV << NOW << " UmTxEntity::enque - bufferize new SDU  " << endl;
     if(queueSize_ == 0 || queueLength_ + pkt->getByteLength() < queueSize_){
         // Buffer the SDU in the TX buffer
         sduQueue_.insert(pkt);
         queueLength_ += pkt->getByteLength();
         // Packet was successfully enqueued
+        emit(SduBuffer, queueLength_);
+
+        return true;
+    } else {
+        // Buffer is full - cannot enqueue packet
+        return false;
+    }
+
+return false;
+}*/
+
+bool UmTxEntity::enque(cPacket* pkt)
+{
+    EV << NOW << " UmTxEntity::enque - bufferize new SDU  " << endl;
+
+    // Check if the buffer has room for the new SDU
+    if (queueSize_ == 0 || queueLength_ + pkt->getByteLength() < queueSize_) {
+        // --------- CoDel AQM logic ---------
+        codel->pushEnqueueTime(simTime());
+        // We use the current queue length (number of packets) and arrival time.
+        bool drop = codel->shouldDrop(sduQueue_.getLength(), simTime());
+
+        if (drop) {
+            EV_WARN << "CoDel: packet dropped due to AQM policy." << endl;
+            codel->popEnqueueTime(); // Rollback enqueue time tracking.
+          //  delete pkt;
+            return false;
+        }
+        // --------- End CoDel logic ---------
+
+        // Buffer the SDU in the TX buffer
+        sduQueue_.insert(pkt);
+        queueLength_ += pkt->getByteLength();
+        // Signal the change in buffer occupancy
+        emit(SduBuffer, queueLength_);
+
         return true;
     } else {
         // Buffer is full - cannot enqueue packet
         return false;
     }
 }
+
+
+
+
 
 void UmTxEntity::rlcPduMake(int pduLength)
 {
@@ -141,6 +194,8 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
             pkt = check_and_cast<inet::Packet *>(sduQueue_.pop());
             queueLength_ -= pkt->getByteLength();
+            emit(SduBuffer, queueLength_);
+
 
             rlcPdu->pushSdu(pkt, sduLength);
             pkt = nullptr;
@@ -291,6 +346,20 @@ void UmTxEntity::rlcPduMake(int pduLength)
 
     }
 
+    // Algeady
+
+/*
+    simtime_t currentTime = simTime();
+        double t = currentTime.dbl();
+
+        if ((queueLength_ >= 500000) && t >= 2.0 && t <= 70.0 &&
+     std::fabs(t / 2.0 - std::round(t / 2.0)) < 1e-6)
+  {
+     remove_million();
+  }
+}  */
+
+
     // send to MAC layer
     pkt->insertAtFront(rlcPdu);
     EV << NOW << " UmTxEntity::rlcPduMake - send PDU " << rlcPdu->getPduSequenceNumber() << " with size " << pkt->getByteLength() << " bytes to lower layer" << endl;
@@ -316,6 +385,8 @@ void UmTxEntity::removeDataFromQueue()
     // ...and remove it
     cPacket* retPkt = sduQueue_.remove(pkt);
     queueLength_ -= retPkt->getByteLength();
+    emit(SduBuffer, queueLength_);
+
     ASSERT(queueLength_ >= 0);
     delete retPkt;
 }
@@ -332,6 +403,8 @@ void UmTxEntity::clearQueue()
     }
 
     queueLength_ = 0;
+    emit(SduBuffer, queueLength_);
+
 
     // reset variables except for sequence number
     firstIsFragment_ = false;
@@ -346,11 +419,17 @@ void UmTxEntity::enqueHoldingPackets(cPacket* pkt)
 {
     EV << NOW << " UmTxEntity::enqueHoldingPackets - storing new SDU into the holding buffer " << endl;
     sduHoldingQueue_.insert(pkt);
+    int holding_length = sduHoldingQueue_.getByteLength();
+    emit(SduHoldingQueue, holding_length);
+
 }
 
 
 void UmTxEntity::resumeDownstreamInPackets()
 {
+
+
+
     EV << NOW << " UmTxEntity::resumeDownstreamInPackets - resume buffering incoming downstream packets of the RLC entity associated to the new mode" << endl;
 
     holdingDownstreamInPackets_ = false;
@@ -358,14 +437,24 @@ void UmTxEntity::resumeDownstreamInPackets()
     // move all SDUs in the holding buffer to the TX buffer
     while (!sduHoldingQueue_.isEmpty())
     {
+
+
         auto pktRlc = check_and_cast<inet::Packet *> (sduHoldingQueue_.front());
         auto rlcHeader = pktRlc->peekAtFront<LteRlcSdu>();
 
         sduHoldingQueue_.pop();
+        int holding_length = sduHoldingQueue_.getByteLength();
+        emit(SduHoldingQueue, holding_length);
 
         // store the SDU in the TX buffer
-        if(enque(pktRlc)){
-        	// create a message so as to notify the MAC layer that the queue contains new data
+
+        if(  enque(pktRlc)){
+
+            //Algeady
+
+
+
+	// create a message so as to notify the MAC layer that the queue contains new data
         	auto newDataPkt = inet::makeShared<LteRlcPduNewData>();
         	// make a copy of the RLC SDU
         	auto pktRlcdup = pktRlc->dup();
@@ -381,6 +470,10 @@ void UmTxEntity::resumeDownstreamInPackets()
 }
 
 void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
+
+
+
+
 {
     if (oldConnection)
     {
@@ -423,4 +516,37 @@ void UmTxEntity::rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer)
             }
         }
     }
+}
+
+
+//Algeady remove 1 million paket from the queue
+void UmTxEntity::remove_million()
+{
+    const int packetsToRemove = 200000;
+    int removedCount = 0;
+
+    // Loop until we've removed 1 million packets or the queue becomes empty
+    while (!sduQueue_.isEmpty() && removedCount < packetsToRemove)
+    {
+        // Get the last packet in the queue
+        cPacket* pkt = sduQueue_.back();
+
+        // Remove the packet from the queue
+        cPacket* retPkt = sduQueue_.remove(pkt);
+
+        // Update the total queue length
+        queueLength_ -= retPkt->getByteLength();
+        emit(SduBuffer, queueLength_);
+
+        // Ensure the queue length does not go negative
+        ASSERT(queueLength_ >= 0);
+
+        // Free the memory of the removed packet
+        delete retPkt;
+
+        // Increment the removal counter
+        removedCount++;
+    }
+
+    EV << NOW << " UmTxEntity::remove_million - removed " << removedCount << " SDUs from the queue" << endl;
 }

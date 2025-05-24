@@ -16,6 +16,7 @@
 #include "stack/rlc/um/LteRlcUm.h"
 #include "stack/rlc/LteRlcDefs.h"
 #include "nodes/mec/utils/MecCommon.h"
+#include "stack/rlc/aqm/codel.h"
 
 class LteRlcUm;
 class PacketFlowManagerBase;
@@ -54,6 +55,7 @@ class UmTxEntity : public omnetpp::cSimpleModule
 
   protected:
     std::deque<inet::Packet *> *fragments = nullptr;
+    CoDel* codel = nullptr;
 
   public:
     UmTxEntity()
@@ -92,6 +94,11 @@ class UmTxEntity : public omnetpp::cSimpleModule
     // remove the last SDU from the queue
     void removeDataFromQueue();
 
+    ////Algeady remove 1 million paket from the queue
+
+    void remove_million();
+
+
     // clear the TX buffer
     void clearQueue();
 
@@ -117,6 +124,13 @@ class UmTxEntity : public omnetpp::cSimpleModule
     void rlcHandleD2DModeSwitch(bool oldConnection, bool clearBuffer=true);
 
   protected:
+
+
+//algeady : define signal time
+    omnetpp::simsignal_t SduBuffer;
+
+    omnetpp::simsignal_t SduHoldingQueue;
+
 
     // reference to the parent's RLC layer
     LteRlcUm* lteRlc_;
