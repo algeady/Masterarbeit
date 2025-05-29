@@ -47,3 +47,4 @@ bin/
 # Python bytecode (if using any scripts)
 *.pyc
 __pycache__/
+*.zip
