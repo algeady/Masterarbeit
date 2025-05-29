@@ -14,7 +14,7 @@
 *.msg.bak
 *.cmsg
 *.oppbak
-
+*.zip
 # Ignore build and output folders
 bin/
 out/
