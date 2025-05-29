@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for $(LIB_PREFIX)INET
 #
 # This file was generated with the command:
-#  opp_makemake --make-so -f --deep -o INET -O out -pINET -I. -Xinet/applications/voipstream -Xinet/common/selfdoc -Xinet/emulation -Xinet/linklayer/configurator/gatescheduling/z3 -Xinet/transportlayer/tcp_lwip -Xinet/visualizer/osg
+#  opp_makemake --make-so -f --deep -o INET -O out -pINET -I. -Xinet/applications/voipstream -Xinet/common/selfdoc -Xinet/linklayer/configurator/gatescheduling/z3 -Xinet/transportlayer/tcp_lwip -Xinet/visualizer/osg
 #
 
 # Name of target to be created (-o option)
@@ -236,6 +236,13 @@ OBJS = \
     $O/inet/common/socket/SocketBase.o \
     $O/inet/common/socket/SocketMap.o \
     $O/inet/common/streetmap/OpenStreetMap.o \
+    $O/inet/emulation/common/ExtInterface.o \
+    $O/inet/emulation/linklayer/ethernet/ExtEthernetSocket.o \
+    $O/inet/emulation/linklayer/ethernet/ExtEthernetTapDevice.o \
+    $O/inet/emulation/networklayer/ipv4/ExtIpv4Socket.o \
+    $O/inet/emulation/networklayer/ipv4/ExtIpv4TunDevice.o \
+    $O/inet/emulation/networklayer/ipv4/Ipv4Encap.o \
+    $O/inet/emulation/transportlayer/udp/ExtLowerUdp.o \
     $O/inet/environment/common/Material.o \
     $O/inet/environment/common/MaterialRegistry.o \
     $O/inet/environment/common/PhysicalEnvironment.o \

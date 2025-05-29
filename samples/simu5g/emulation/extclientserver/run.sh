@@ -4,5 +4,6 @@
 
 
 # run simulation
-simu5g -u Cmdenv -c ExtClientServer 
+# simu5g -u Cmdenv -c ExtClientServer
+  simu5g -u Cmdenv -c test
 
