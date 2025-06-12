@@ -1,0 +1,55 @@
+# OMNeT++ build artifacts
+*.o
+*.a
+*.so
+*.d
+*.exe
+*.bak
+*.swp
+*.out
+*.log
+*.vec
+*.sca
+*.ned.bak
+*.msg.bak
+*.cmsg
+*.oppbak
+*.metadata/
+*.metadata
+*.pdmo
+# Ignore build and output folders
+bin/
+out/
+lib/
+
+# Ignore images and documentation folders
+images/
+doc/
+
+# Ignore headers and includes if auto-generated or not source
+include/
+
+# IDE & temp files
+*.~*
+*~
+.DS_Store
+Thumbs.db
+
+# Eclipse/OMNeT++ workspace settings
+.cproject
+.project
+.settings/
+
+# Output folders
+out/
+results/
+build/
+bin/
+
+# Python bytecode (if using any scripts)
+*.pyc
+__pycache__/
+*.pdom
+*.zip
+*.tar.gz
+*.log

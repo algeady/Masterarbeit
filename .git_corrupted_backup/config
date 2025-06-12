@@ -1,0 +1,12 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[lfs "https://github.com/algeady/Masterarbeit.git/info/lfs"]
+	access = basic
+[lfs]
+	allowincompletepush = true
+[remote "origin"]
+	url = https://github.com/algeady/Masterarbeit.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
